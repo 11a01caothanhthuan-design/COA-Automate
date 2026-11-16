@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wanek Vendor COA Quality Dashboard - Weekly Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary-navy: #0e3b5e;
+      --navy-dark: #09263e;
+      --bg-page: #f0f3f6;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      
+      --color-pass: #16a34a;
+      --color-warn: #f59e0b;
+      --color-fail: #dc2626;
+      --color-not-eval: #94a3b8;
+      --color-blue: #0284c7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.4;
+      padding-bottom: 60px;
+    }
+
+    /* Top Navy Header */
+    .top-header {
+      background: linear-gradient(135deg, var(--primary-navy) 0%, var(--navy-dark) 100%);
+      color: #ffffff;
+      padding: 18px 28px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .top-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .live-status-pill {
+      font-size: 12px;
+      font-weight: 500;
+      background: rgba(34, 197, 94, 0.2);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .top-header p {
+      font-size: 12.5px;
+      color: #cbd5e1;
+      max-width: 1400px;
+      line-height: 1.5;
+    }
+
+    /* Global Controls Toolbar */
+    .controls-toolbar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      padding: 14px 28px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+
+    .category-pills {
+      display: flex;
+      background: #f1f5f9;
+      padding: 3px;
+      border-radius: 9999px;
+      gap: 2px;
+    }
+    .cat-btn {
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 9999px;
+      border: none;
+      background: transparent;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cat-btn.active {
+      background: var(--primary-navy);
+      color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+    }
+    .filter-select {
+      padding: 6px 12px;
+      font-size: 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background-color: #fff;
+      color: #1e293b;
+      cursor: pointer;
+      outline: none;
+    }
+    .filter-select:focus {
+      border-color: var(--primary-navy);
+      box-shadow: 0 0 0 2px rgba(14, 59, 94, 0.15);
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f8fafc;
+      padding: 4px 14px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      font-size: 12.5px;
+    }
+    .slider-container input[type="range"] {
+      width: 100px;
+      cursor: pointer;
+      accent-color: #0284c7;
+    }
+
+    /* Legend Box */
+    .legend-bar {
+      padding: 8px 28px;
+      font-size: 12px;
+      color: #475569;
+      background: #fafbfc;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-badge {
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .bg-fail { background: #fee2e2; color: #dc2626; }
+    .bg-warn { background: #ffedd5; color: #b45309; }
+    .bg-pass { background: #dcfce7; color: #15803d; }
+    .bg-not-eval { background: #f1f5f9; color: #64748b; }
+
+    /* Main Container */
+    .container {
+      max-width: 1600px;
+      margin: 20px auto;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Sections */
+    .card-section {
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      padding: 22px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+    .section-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .section-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    /* KPI Cards Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 16px 18px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      border-left: 5px solid #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s ease;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    }
+    .kpi-card.border-scope { border-left-color: var(--primary-navy); }
+    .kpi-card.border-eval { border-left-color: #0369a1; }
+    .kpi-card.border-pass { border-left-color: var(--color-pass); }
+    .kpi-card.border-warn { border-left-color: var(--color-warn); }
+    .kpi-card.border-fail { border-left-color: var(--color-fail); }
+    .kpi-card.border-not-eval { border-left-color: var(--color-not-eval); }
+    .kpi-card.border-rate { border-left-color: #0284c7; }
+
+    .kpi-val {
+      font-size: 32px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .kpi-detail {
+      font-size: 11.5px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    /* Overview Charts Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px;
+      width: 100%;
+      min-width: 0;
+    }
+    @media (max-width: 1100px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .chart-box {
+      background: #fafbfc;
+      border: 1px solid #eef2f6;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .chart-header {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chart-canvas-wrapper {
+      position: relative;
+      height: 320px;
+      width: 100%;
+    }
+
+    /* Scroll only inside each chart card. The minmax(0, 1fr) grid tracks and
+       min-width: 0 on the cards prevent a wide chart from expanding the page. */
+    .chart-horizontal-scroll {
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      height: 320px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-gutter: stable;
+      overscroll-behavior-x: contain;
+    }
+    .chart-week-inner {
+      position: relative;
+      height: 300px;
+      min-width: 100%;
+    }
+    .chart-vertical-scroll {
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      height: 320px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      scrollbar-gutter: stable;
+      overscroll-behavior-y: contain;
+    }
+    .chart-vendor-inner {
+      position: relative;
+      width: 100%;
+      min-height: 300px;
+    }
+    .chart-horizontal-scroll canvas,
+    .chart-vertical-scroll canvas {
+      display: block;
+    }
+    @media print {
+      .chart-horizontal-scroll,
+      .chart-vertical-scroll {
+        height: auto !important;
+        overflow: visible !important;
+      }
+    }
+
+    /* Tables */
+    .table-responsive {
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+    table.data-table th {
+      background: #f8fafc;
+      padding: 10px 14px;
+      font-weight: 600;
+      color: #334155;
+      border-bottom: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    table.data-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+      vertical-align: middle;
+    }
+    table.data-table tr:hover td {
+      background-color: #f8fafc;
+      cursor: pointer;
+    }
+
+    /* Mini status mix bar */
+    .status-mix-bar {
+      display: flex;
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+      width: 120px;
+      background: #e2e8f0;
+    }
+    .mix-segment {
+      height: 100%;
+    }
+    .mix-pass { background: var(--color-pass); }
+    .mix-warn { background: var(--color-warn); }
+    .mix-fail { background: var(--color-fail); }
+    .mix-not-eval { background: var(--color-not-eval); }
+
+    /* Matrix Heatmap Table */
+    .matrix-table {
+      font-size: 11.5px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .matrix-table th, .matrix-table td {
+      border: 1px solid #e2e8f0;
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .matrix-table th {
+      background: #f8fafc;
+      font-weight: 600;
+    }
+    .matrix-vendor-col {
+      text-align: left !important;
+      font-weight: 600;
+      background: #fff;
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      min-width: 140px;
+    }
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #fff;
+      margin: 1px;
+    }
+    .badge-pass { background: var(--color-pass); }
+    .badge-warn { background: var(--color-warn); }
+    .badge-fail { background: var(--color-fail); }
+    .badge-not-eval { background: var(--color-not-eval); }
+
+    /* Small Multiples Run Charts (Layer 1) */
+    .run-charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 18px;
+      margin-top: 14px;
+    }
+    .run-chart-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .run-chart-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 2px;
+    }
+    .run-chart-spec {
+      font-size: 11.5px;
+      color: #64748b;
+      margin-bottom: 10px;
+    }
+
+    /* Refresh button */
+    .btn-refresh {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-refresh:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+    }
+  
+    /* Layer 1 compact/expand */
+    #runChartsViewport{position:relative;max-height:430px;overflow:hidden;transition:max-height .25s ease}
+    #runChartsViewport.expanded{max-height:none;overflow:visible}
+    #runChartsViewport:not(.expanded)::after{content:"";position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(to bottom,rgba(255,255,255,0),rgba(255,255,255,.96));pointer-events:none}
+    .layer1-expand-row{display:flex;justify-content:center;margin-top:12px}
+    #layer1ExpandBtn{border:1px solid #cbd5e1;background:#fff;color:#0f172a;border-radius:8px;padding:8px 18px;font-weight:600;cursor:pointer}
+    #layer1ExpandBtn:hover{background:#f8fafc}
+    @media (prefers-color-scheme:dark){#runChartsViewport:not(.expanded)::after{background:linear-gradient(to bottom,rgba(15,23,42,0),rgba(15,23,42,.96))}}
+</style>
+<style>.record-source{max-width:260px;word-break:break-word;font-size:11px;color:#475569}.record-meta{font-size:11px;color:#64748b;line-height:1.45}.record-product{font-weight:600}.record-material{font-size:11px;color:#64748b;margin-top:3px}details.test-detail summary{cursor:pointer;color:#0e3b5e;font-weight:600;white-space:nowrap}.test-grid{margin-top:8px;display:grid;grid-template-columns:minmax(150px,1.4fr) 80px minmax(110px,1fr) minmax(110px,1fr) 100px;gap:1px;background:#e2e8f0;border:1px solid #e2e8f0;min-width:650px}.test-grid>div{background:white;padding:6px 8px;font-size:10.5px}.test-grid .th{background:#f1f5f9;font-weight:700}.st-PASS{color:#15803d;font-weight:700}.st-WARNING{color:#b45309;font-weight:700}.st-FAIL{color:#b91c1c;font-weight:700}.st-NOT-EVALUATED{color:#64748b;font-weight:700}.audit-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 14px;color:#1e3a5f;font-size:12px;margin-bottom:12px}.empty-note{padding:22px;text-align:center;color:#64748b}@media print{.controls-toolbar{position:static}.btn-refresh{display:none}.table-responsive{overflow:visible}}</style><style>
+.time-mode-toggle{display:inline-flex;background:#eef2f6;border:1px solid #cbd5e1;border-radius:7px;padding:2px}.time-mode-btn{border:0;background:transparent;color:#475569;font-weight:700;font-size:12px;padding:5px 10px;border-radius:5px;cursor:pointer}.time-mode-btn.active{background:#0e3b5e;color:white;box-shadow:0 1px 3px rgba(0,0,0,.15)}.date-basis{font-size:10px;color:#64748b;line-height:1.35;margin-top:4px;max-width:190px}.count-unit-note{font-size:11.5px;color:#64748b;margin-top:7px}
+</style>
+  <style>
+    .threshold-method{margin:10px 28px 0;background:#eff6ff;border:1px solid #bfdbfe;border-left:4px solid #0284c7;border-radius:8px;padding:10px 14px;color:#334155;font-size:11.5px;line-height:1.55}
+    .threshold-method code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#fff;border:1px solid #dbeafe;border-radius:4px;padding:1px 4px;color:#0f3d5f}
+    .threshold-live{color:#0369a1;font-weight:700}
+  </style>
+
+<style id="streamlinedResponsiveLayout">
+  .top-header { padding: 16px 24px; }
+  .top-header h1 { margin-bottom: 0; gap: 16px; flex-wrap: wrap; }
+  .top-header p { display: none !important; }
+
+  .controls-toolbar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    align-items: end;
+    gap: 12px;
+    padding: 12px 24px;
+  }
+  .controls-toolbar > * { min-width: 0; margin: 0 !important; }
+  .filter-group {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .filter-group > label { white-space: nowrap; line-height: 1.2; }
+  .filter-select {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: 34px;
+    padding: 6px 30px 6px 10px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .time-mode-toggle { width: 100%; min-width: 132px; }
+  .time-mode-btn { flex: 1 1 50%; }
+  .slider-container {
+    min-width: 0;
+    grid-column: span 2;
+    height: 58px;
+    display: grid;
+    grid-template-columns: minmax(128px, 1fr) minmax(90px, .8fr);
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+  }
+  .slider-container > span { line-height: 1.25; }
+  .slider-container input[type="range"] { width: 100%; min-width: 72px; }
+
+  .run-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(150px, .7fr) minmax(300px, 2fr) minmax(220px, 1.2fr);
+    align-items: end;
+    gap: 12px;
+    min-width: 0;
+    background: #f8fafc;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 16px;
+  }
+  .run-filter-grid > .filter-group { min-width: 0; width: 100%; }
+  .run-filter-grid .filter-select { width: 100%; max-width: 100%; }
+
+  .section-title { gap: 12px; flex-wrap: wrap; }
+  .chart-header { min-height: 22px; }
+  .kpi-card { padding: 14px 16px; }
+  .kpi-label { line-height: 1.25; }
+
+  @media (max-width: 1220px) {
+    .controls-toolbar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .slider-container { grid-column: span 2; }
+    .run-filter-grid { grid-template-columns: minmax(140px, .7fr) minmax(260px, 1.8fr); }
+    .run-filter-grid > .filter-group:last-child { grid-column: 1 / -1; }
+  }
+  @media (max-width: 820px) {
+    .top-header { padding: 14px 18px; }
+    .top-header h1 { font-size: 19px; }
+    .live-status-pill { display: none; }
+    .controls-toolbar { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px 16px; gap: 10px; }
+    .slider-container { grid-column: 1 / -1; }
+    .run-filter-grid { grid-template-columns: 1fr; }
+    .run-filter-grid > .filter-group:last-child { grid-column: auto; }
+    .container { padding: 0 14px; gap: 16px; }
+    .card-section { padding: 18px 16px; }
+  }
+  @media (max-width: 520px) {
+    .controls-toolbar { grid-template-columns: 1fr; }
+    .slider-container { grid-column: auto; }
+    .legend-bar { padding: 8px 16px; }
+    .container { padding: 0 10px; }
+  }
+</style>
+
+<style id="compactDashboardLayout">
+  /* Seven KPI cards in one row on desktop. */
+  .kpi-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    min-width: 0;
+    min-height: 104px;
+    padding: 12px 12px;
+    border-left-width: 4px;
+  }
+  .kpi-val { font-size: clamp(23px, 2vw, 29px); line-height: 1.05; margin-bottom: 8px; }
+  .kpi-label { font-size: 10.5px; line-height: 1.28; overflow-wrap: anywhere; }
+
+  /* Preserve every row while shortening the page through internal scrolling. */
+  .compact-table-scroll {
+    position: relative;
+    overflow: auto;
+    scrollbar-gutter: stable both-edges;
+    overscroll-behavior: contain;
+    border: 1px solid #dbe3ea;
+    border-radius: 8px;
+  }
+  .findings-scroll { max-height: 430px; }
+  .coverage-scroll { max-height: 360px; }
+  .compact-table-scroll table { margin: 0; }
+  .compact-table-scroll table.data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #f1f5f9;
+    box-shadow: 0 1px 0 #dbe3ea;
+  }
+  .compact-table-scroll table.data-table td,
+  .compact-table-scroll table.data-table th { padding-top: 9px; padding-bottom: 9px; }
+
+  @media (max-width: 1280px) {
+    .kpi-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  @media (max-width: 820px) {
+    .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .findings-scroll { max-height: 380px; }
+    .coverage-scroll { max-height: 320px; }
+  }
+  @media (max-width: 480px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+  }
+  @media print {
+    .compact-table-scroll { max-height: none !important; overflow: visible !important; }
+    .compact-table-scroll table.data-table thead th { position: static; }
+  }
+</style>
+
+<style id="oneRowKpiAndRegister">
+  .register-scroll { max-height: 480px; }
+
+  .kpi-grid {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(128px, 1fr)) !important;
+    grid-auto-flow: column;
+    gap: 8px !important;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 5px;
+    scrollbar-gutter: stable;
+  }
+  .kpi-card {
+    min-width: 128px;
+    min-height: 96px;
+    padding: 10px 10px !important;
+  }
+  .kpi-val { font-size: clamp(21px, 1.75vw, 27px) !important; margin-bottom: 6px !important; }
+  .kpi-label { font-size: 9.8px !important; line-height: 1.24 !important; }
+
+  /* Keep one row at every viewport; small screens can pan the KPI strip horizontally. */
+  @media (max-width: 1280px), (max-width: 820px), (max-width: 480px) {
+    .kpi-grid { grid-template-columns: repeat(7, minmax(128px, 1fr)) !important; }
+  }
+  @media (max-width: 820px) {
+    .register-scroll { max-height: 400px; }
+  }
+  @media print {
+    .register-scroll { max-height: none !important; overflow: visible !important; }
+    .kpi-grid { overflow: visible !important; grid-template-columns: repeat(7, minmax(0, 1fr)) !important; }
+    .kpi-card { min-width: 0; }
+  }
+</style>
+
+<style id="vendorSummaryInternalScroll">
+  .vendor-summary-scroll {
+    max-height: 380px;
+    overflow: auto;
+    scrollbar-gutter: stable both-edges;
+    overscroll-behavior: contain;
+  }
+  .vendor-summary-scroll table.data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 6;
+    background: #f1f5f9;
+    box-shadow: 0 1px 0 #dbe3ea;
+  }
+  .vendor-summary-scroll tbody tr { cursor: pointer; }
+  @media (max-width: 820px) {
+    .vendor-summary-scroll { max-height: 340px; }
+  }
+  @media print {
+    .vendor-summary-scroll { max-height: none !important; overflow: visible !important; }
+    .vendor-summary-scroll table.data-table thead th { position: static; }
+  }
+</style>
+
+<style id="allWeeksMatrixLayout">
+  .matrix-all-weeks-scroll {
+    position: relative;
+    max-height: 430px;
+    overflow: auto;
+    scrollbar-gutter: stable both-edges;
+    overscroll-behavior: contain;
+  }
+  .matrix-all-weeks-scroll .matrix-table {
+    width: max-content;
+    min-width: 100%;
+    table-layout: auto;
+  }
+  .matrix-all-weeks-scroll .matrix-table th,
+  .matrix-all-weeks-scroll .matrix-table td {
+    min-width: 76px;
+    white-space: nowrap;
+  }
+  .matrix-all-weeks-scroll .matrix-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #f1f5f9;
+    box-shadow: 0 1px 0 #dbe3ea;
+  }
+  .matrix-all-weeks-scroll .matrix-vendor-col {
+    position: sticky;
+    left: 0;
+    z-index: 4;
+    min-width: 160px !important;
+    background: #f8fafc;
+    box-shadow: 1px 0 0 #e2e8f0;
+  }
+  .matrix-all-weeks-scroll thead .matrix-vendor-col {
+    left: 0;
+    z-index: 8;
+    background: #f1f5f9;
+  }
+  .matrix-all-weeks-scroll .matrix-total-col {
+    position: sticky;
+    right: 0;
+    z-index: 4;
+    min-width: 112px !important;
+    background: #f8fafc;
+    box-shadow: -1px 0 0 #e2e8f0;
+  }
+  .matrix-all-weeks-scroll thead .matrix-total-col {
+    right: 0;
+    z-index: 8;
+    background: #f1f5f9;
+  }
+  @media print {
+    .matrix-all-weeks-scroll { max-height: none !important; overflow: visible !important; }
+    .matrix-all-weeks-scroll .matrix-table thead th,
+    .matrix-all-weeks-scroll .matrix-vendor-col,
+    .matrix-all-weeks-scroll .matrix-total-col { position: static; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Top Dark Navy Header -->
+  <header class="top-header">
+    <h1>
+      <span>Wanek Vendor COA Quality Dashboard - Weekly Report</span>
+    <span style="display:flex;gap:10px;align-items:center;font-size:12px;font-weight:500"><span id="dataStamp"></span><button type="button" class="btn-refresh" onclick="clearAllFilters()">Clear filters</button><button type="button" class="btn-refresh" onclick="location.reload()">&#10227; Reload</button></span></h1>
+  </header><noscript><style>@page{size:A3 landscape;margin:12mm}#dynamicDashboard,.controls-toolbar,.legend-bar,.threshold-method{display:none!important}.static-report{font-family:Arial,sans-serif}.static-table{width:100%;border-collapse:collapse}.static-table th,.static-table td{border:1px solid #cbd5e1;padding:6px;font-size:9px;vertical-align:top}.static-table th{background:#eaf1f7;color:#0e3b5e}</style><main class="static-report"><h1>Wanek Vendor COA Quality Dashboard - Weekly Report</h1><p>Within each vendor: same verified item code and specification are grouped despite wording variation. Different denier, length, color or treatment remain separate. Missing codes use only source-supported material/specification; uncertain records are not guessed together.</p><table class="static-table"><thead><tr><th>Vendor</th><th>Normalized item</th><th>Test/Spec series</th><th>History points</th></tr></thead><tbody><tr><td>Cao Cuong</td><td>02081 VN | Single Bedlock | CT3/Q235 steel; ASTM 117</td><td>1</td><td>1</td></tr><tr><td>Cao Cuong</td><td>No item code | Stamped Steel Hardware | 3 mm thickness; other dimensions vary by inspection page</td><td>1</td><td>1</td></tr><tr><td>Cao Cuong</td><td>No item code | Stamped Steel Hardware | 85 x 18 x 3 mm</td><td>1</td><td>1</td></tr><tr><td>Dafa</td><td>30651 | Recycled Brown HCS Polyester Staple Fiber | 7D x 32 mm; two-polymer</td><td>8</td><td>16</td></tr><tr><td>Dafa</td><td>30651 | Recycled Brown Polyester Staple Fiber | Detailed denier/length not stated on COA</td><td>8</td><td>80</td></tr><tr><td>Dafa</td><td>73751 | Brown Hollow Nonconjugated Polyester Staple Fiber | 20D; length not stated on COA</td><td>8</td><td>72</td></tr><tr><td>Far Eastern</td><td>SN-5560CHB | EASTLON Nonwovens Polyester Fiber | 15 den x 64 mm; SD</td><td>8</td><td>8</td></tr><tr><td>Far Eastern</td><td>SN-5560CHS | EASTLON Nonwovens Polyester Fiber | 15 den x 64 mm; SD</td><td>8</td><td>8</td></tr><tr><td>Far Eastern</td><td>SN-5760CH | EASTLON Nonwovens Polyester Fiber | 7 den x 64 mm; SD</td><td>8</td><td>8</td></tr><tr><td>Far Eastern</td><td>SN-5760CHS | EASTLON Nonwovens Polyester Fiber | 7 den x 64 mm; SD</td><td>8</td><td>8</td></tr><tr><td>HuaYing</td><td>108093VN | Black HDPE Resin | Grade 9011</td><td>7</td><td>14</td></tr><tr><td>Jiangsu Shagang</td><td>No item code | Hot-Rolled Steel Coil | Q235B; 8.00 x 1500 mm; GB/T 34560.2-2017</td><td>4</td><td>4</td></tr><tr><td>KHAI THANH</td><td>No item code | Recycled Hollow Siliconised Polyester Staple Fiber | 20 den x 51 mm; brown</td><td>12</td><td>12</td></tr><tr><td>Mekong</td><td>No item code | BHS Polyester Fiber | 15 den x 51 mm</td><td>8</td><td>24</td></tr><tr><td>Ngoc Huong Phat</td><td>78104 | Black Grooved Bolt | M7 x 22 mm; 1022 steel; ASME B18.2.1</td><td>1</td><td>1</td></tr><tr><td>Ngoc Huong Phat</td><td>No item code | Furniture Hardware Set | B584-94/96; 1006 steel</td><td>1</td><td>1</td></tr><tr><td>Quoc Hung / CSVC</td><td>No item code | Cold-Rolled Steel Coil | SPCC-SD CQ1; JIS G3141; 1.50 x 1250 mm</td><td>1</td><td>1</td></tr><tr><td>Quoc Hung / CSVC</td><td>No item code | Cold-Rolled Steel Coil | SPCC-SD CQ1; JIS G3141; 2.00 x 1250 mm</td><td>1</td><td>1</td></tr><tr><td>Quoc Hung / CSVC</td><td>No item code | Steel Sheet in Coil | JIS G3131:2018; 3.00 x 1250 mm</td><td>1</td><td>1</td></tr><tr><td>Quoc Hung / Formosa Ha Tinh</td><td>No item code | Steel Wire Rod | SAE J403 1006; 6.50 mm diameter</td><td>1</td><td>2</td></tr><tr><td>Quoc Hung / Formosa Ha Tinh</td><td>No item code | Steel Wire Rod | SAE J403 1006; 8.00 mm diameter</td><td>1</td><td>1</td></tr><tr><td>TOMS</td><td>32822 | Virgin White Poly-Down Fiber | 1.33-2.50 dtex; nominal length 51 mm</td><td>10</td><td>40</td></tr><tr><td>Thanh Cong</td><td>108093TVN | Plastic Granules | Polymer grade not stated on COA</td><td>7</td><td>21</td></tr><tr><td>Tường Lực</td><td>219 | Spray Adhesive | Viscosity 100 ± 30 cP at 25°C</td><td>3</td><td>6</td></tr><tr><td>Vikohassan</td><td>30651WNK | Brown Hollow Siliconised Polyester Staple Fiber | 20D x 51 mm; Brown-A</td><td>10</td><td>11</td></tr><tr><td>Vikohassan</td><td>73738WNK | Hollow Conjugated Polyester Fiber | 20D x 64 mm</td><td>27</td><td>171</td></tr><tr><td>Vikohassan</td><td>73748WNK | Hollow Conjugated Siliconized Polyester Fiber | 7D x 32 mm; color not stated</td><td>12</td><td>36</td></tr><tr><td>Vikohassan</td><td>73748WNK | Hollow Conjugated Siliconized Polyester Fiber | 7D x 32 mm; white</td><td>11</td><td>33</td></tr></tbody></table></main></noscript>
+
+  <!-- Controls Toolbar -->
+  <div class="controls-toolbar">
+    <div class="filter-group">
+      <label>Slice</label>
+      <select class="filter-select" id="selectSlice" onchange="applyFilters()">
+        <option value="All materials">All materials</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Year</label>
+      <select class="filter-select" id="selectYear" onchange="applyFilters()">
+        <option value="All">All years</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Time</label>
+      <div class="time-mode-toggle" role="group" aria-label="Time filter mode">
+        <button type="button" id="modeWeekBtn" class="time-mode-btn active" onclick="setTimeMode('week')">Week</button>
+        <button type="button" id="modeDateBtn" class="time-mode-btn" onclick="setTimeMode('date')">Date</button>
+      </div>
+    </div>
+    <div class="filter-group" id="weekFilterGroup">
+      <label>Week</label>
+      <select class="filter-select" id="selectWeek" onchange="applyFilters()"><option value="All">All weeks</option></select>
+    </div>
+    <div class="filter-group" id="dateFilterGroup" style="display:none">
+      <label>Date</label>
+      <select class="filter-select" id="selectDate" onchange="applyFilters()"><option value="All">All dates</option></select>
+    </div>
+
+    <div class="filter-group">
+      <label>Vendor</label>
+      <select class="filter-select" id="selectVendor" onchange="applyFilters()">
+        <option value="All">All vendors</option>
+      </select>
+    </div>
+
+    <div class="slider-container">
+      <span>Near-limit warning ≤ <strong><span id="warnPctVal">5</span>%</strong></span>
+      <input type="range" id="warnSlider" min="1" max="15" step="1" value="5" oninput="updateWarningPct(this.value)" aria-label="Near-limit warning percentage">
+    </div>
+  </div>
+
+  <!-- Legend & Definitions -->
+  <div class="legend-bar">
+    <span class="legend-item"><span class="legend-badge bg-fail">FAIL</span> outside printed tolerance</span>
+    <span>•</span>
+    <span class="legend-item"><span class="legend-badge bg-warn">WARNING</span> inside tolerance but within chosen % of a limit</span>
+    <span>•</span>
+    <span class="legend-item"><span class="legend-badge bg-pass">PASS</span></span>
+    <span>•</span>
+    <span class="legend-item"><span class="legend-badge bg-not-eval">NOT EVALUATED</span> = scanned / no readable data or no spec on COA. A COA takes its worst test status.</span>
+  </div>
+
+  <!-- Main Container -->
+  <main class="container" id="dynamicDashboard">
+
+
+    <!-- SECTION 1: LAYER 2 - SUMMARY -->
+    <section class="card-section" id="sectionLayer2">
+      <div class="section-title">
+        <span>LAYER 2 – Vendor pass/fail summary</span>
+      </div>
+      <div class="section-sub" id="layer2Subtitle">
+        all materials · all years · all weeks · all vendors
+      </div>
+
+      <!-- 7 KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card border-scope">
+          <div class="kpi-val" id="kpiScope">561</div>
+          <div class="kpi-label">COAs / lots in scope</div>
+        </div>
+        <div class="kpi-card border-eval">
+          <div class="kpi-val" id="kpiEval">509</div>
+          <div class="kpi-label">Evaluated vs spec (<span id="kpiEvalPct">91</span>%)</div>
+        </div>
+        <div class="kpi-card border-pass">
+          <div class="kpi-val" style="color: var(--color-pass);" id="kpiPass">402</div>
+          <div class="kpi-label">PASS COAs / lots</div>
+        </div>
+        <div class="kpi-card border-warn">
+          <div class="kpi-val" style="color: var(--color-warn);" id="kpiWarn">96</div>
+          <div class="kpi-label">WARNING COAs / lots (worst test)</div>
+        </div>
+        <div class="kpi-card border-fail">
+          <div class="kpi-val" style="color: var(--color-fail);" id="kpiFail">11</div>
+          <div class="kpi-label">FAIL COAs / lots (worst test)</div>
+        </div>
+        <div class="kpi-card border-not-eval">
+          <div class="kpi-val" style="color: var(--color-not-eval);" id="kpiNotEval">52</div>
+          <div class="kpi-label">NOT EVALUATED</div>
+        </div>
+        <div class="kpi-card border-rate">
+          <div class="kpi-val" style="color: #0284c7;" id="kpiFailRate">2.2%</div>
+          <div class="kpi-label">Fail rate of evaluated</div>
+        </div>
+      </div>
+
+      <!-- Overview Charts -->
+      <div class="charts-grid">
+        <div class="chart-box">
+          <div class="chart-header">
+            <span id="chartTimeTitle">COAs per ISO week by status</span>
+          </div>
+          <div class="chart-horizontal-scroll" id="chartWeeklyScroll">
+            <div class="chart-week-inner" id="chartWeeklyInner">
+              <canvas id="chartWeekly"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-box">
+          <div class="chart-header">
+            <span>Pass/fail by vendor – selected period</span>
+          </div>
+          <div class="chart-vertical-scroll" id="chartVendorScroll">
+            <div class="chart-vendor-inner" id="chartVendorInner">
+              <canvas id="chartVendor"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: VENDOR SUMMARY TABLE -->
+    <section class="card-section">
+      <div class="section-title">
+        <span>Vendor summary</span>
+      </div>
+      <div class="table-responsive compact-table-scroll vendor-summary-scroll" style="margin-top: 14px;">
+        <table class="data-table" id="tableVendorSummary">
+          <thead>
+            <tr>
+              <th>Slice</th>
+              <th>Vendor</th>
+<th style="text-align: right;">COAs</th>
+              <th style="text-align: center;">Status mix</th>
+              <th style="text-align: right;">Pass</th>
+              <th style="text-align: right;">Warn</th>
+              <th style="text-align: right;">Fail</th>
+              <th style="text-align: right;">Not eval.</th>
+              <th style="text-align: right;">Fail rate</th>
+              <th>Main issue (fail first)</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyVendorSummary">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 3: VENDOR X WEEK MATRIX HEATMAP -->
+    <section class="card-section">
+      <div class="section-title">
+        <span>Vendor × week matrix</span>
+        <div style="font-size: 11.5px; display: flex; gap: 8px;">
+          <span class="badge-pill badge-pass">P</span> pass
+          <span class="badge-pill badge-warn">W</span> warn
+          <span class="badge-pill badge-fail">F</span> fail
+          <span class="badge-pill badge-not-eval">N</span> not eval.
+        </div>
+      </div>
+      <div class="table-responsive matrix-all-weeks-scroll" style="margin-top: 14px;">
+        <table class="matrix-table" id="tableMatrix">
+          <thead>
+            <tr id="matrixHeaderRow">
+              <th class="matrix-vendor-col">Vendor</th>
+              <!-- Week headers injected here -->
+            </tr>
+          </thead>
+          <tbody id="tbodyMatrix">
+            <!-- Matrix rows injected here -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <!-- SECTION 4: LAYER 1 - RUN CHARTS BY PO -->
+    <section class="card-section" id="sectionLayer1">
+      <div class="section-title">
+        <span>LAYER 1 – Run chart: test point vs. tolerance, by PO</span>
+      </div>
+
+      <!-- Controls inside Layer 1 -->
+      <div class="run-filter-grid">
+        <div class="filter-group">
+          <label>Vendor</label>
+          <select class="filter-select" id="runVendorSelect" onchange="updateRunItemOptions()">
+            <option value="Jiahe">Jiahe</option>
+            <option value="DAFA">DAFA</option>
+          </select>
+        </div>
+        <div style="display:none" class="filter-group">
+          <label>Item</label>
+          <select class="filter-select" id="runItemSelect" onchange="updateRunTestOptions()">
+            <option value="106185">106185</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Test point</label>
+          <select class="filter-select" id="runTestSelect" onchange="updateRunCharts()">
+            <option value="ALL">All test points (small multiples)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Run Charts Container -->
+      <div id="runChartsViewport">
+      <div class="run-charts-grid" id="runChartsContainer">
+        <!-- Canvas cards generated here -->
+      </div>
+          </div>
+      <div class="layer1-expand-row"><button type="button" id="layer1ExpandBtn" onclick="toggleLayer1Charts()" aria-expanded="false">▼ Xem tất cả biểu đồ</button></div>
+    </section>
+
+    <!-- SECTION 5: FINDINGS - FAIL & WARNING -->
+    <section class="card-section">
+      <div class="section-title">
+        <span>Test-level findings - FAIL & WARNING <span style="font-size: 13px; font-weight: normal; color: #dc2626;" id="findingsCountDisplay">- test rows; COA/lot counts shown separately</span></span>
+      </div>
+      <div class="table-responsive compact-table-scroll findings-scroll" style="margin-top: 14px;">
+        <table class="data-table" id="tableFindings">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Week</th>
+              <th>Date</th>
+              <th>Slice</th>
+              <th>Vendor</th>
+              <th>PO</th>
+              <th>Item</th>
+              <th>Lot</th>
+              <th>Test</th>
+              <th>Spec (printed)</th>
+              <th style="text-align: right;">Result</th>
+              <th>Margin to limit</th>
+              <th>Readings</th>
+              <th>Vendor judgement</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyFindings">
+            <!-- Findings rows injected here -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+<section class="card-section" id="sectionRecords"><div class="section-title"><span>Complete COA / lot register <span id="recordsCountDisplay" style="font-size:12px;font-weight:normal;color:#64748b"></span></span></div><div class="table-responsive compact-table-scroll register-scroll" style="margin-top:14px"><table class="data-table"><thead><tr><th>COA date / period</th><th>Slice</th><th>Vendor</th><th>Normalized item / original COA name</th><th>PO/item/lot</th><th>Status</th><th>Source</th><th>Tests</th></tr></thead><tbody id="tbodyRecords"></tbody></table></div></section>
+    <!-- SECTION 7: DATA COVERAGE -->
+    <section class="card-section">
+      <div class="section-title">
+        <span>Data coverage</span>
+      </div>
+      <div class="table-responsive compact-table-scroll coverage-scroll" style="margin-top: 14px;">
+        <table class="data-table" id="tableCoverage">
+          <thead>
+            <tr>
+              <th>Slice</th>
+              <th>Vendor</th>
+              <th style="text-align: right;">Documents found</th>
+              <th style="text-align: right;">COAs / lots read</th>
+              <th style="text-align: right;">Evaluated vs spec</th>
+              <th style="text-align: right;">Not evaluated</th>
+              <th style="text-align: right;">Non-COA docs</th>
+              <th style="text-align: right;">Duplicate copies</th>
+              <th>Main reason not evaluated</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyCoverage">
+            <!-- Coverage rows injected here -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Embedded Data & Client Application Logic -->
+  <script>
+    // Fallback embedded JSON data for direct file:// execution
+    window.COA_DEFAULT_DATA = /*__DATA__*/null;
+
+    let activeData = window.COA_DEFAULT_DATA;
+    let currentCategory = 'All materials';
+    let warningPercentage = 5;
+    let chartWeeklyInstance = null;
+    let chartVendorInstance = null;
+    let runChartInstances = [];
+
+    // Initialize application on load
+    document.addEventListener('DOMContentLoaded', () => {
+      initFilters();
+      renderAll();
+      // Start background poll to auto-refresh from SharePoint JSON if served via HTTP
+      setInterval(checkRemoteDataUpdates, 15000);
+    });
+
+    function setCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }
+
+    function updateWarningPct(val) {
+      warningPercentage = parseInt(val);
+      document.getElementById('warnPctVal').innerText = val;
+      applyFilters();
+    }
+
+    function initFilters() {
+      const vendorSelect = document.getElementById('selectVendor');
+      const weekSelect = document.getElementById('selectWeek');
+      
+      // Populate Weeks
+      activeData.weekly_status.forEach(w => {
+        const opt = document.createElement('option');
+        opt.value = w.week;
+        opt.innerText = w.week;
+        weekSelect.appendChild(opt);
+      });
+
+      // Populate Vendors
+      activeData.vendors.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.name;
+        opt.innerText = v.name;
+        vendorSelect.appendChild(opt);
+      });
+
+      // Layer 1 Vendors
+      const runVendor = document.getElementById('runVendorSelect');
+      runVendor.innerHTML = '';
+      Object.keys(activeData.run_charts).forEach(vName => {
+        const opt = document.createElement('option');
+        opt.value = vName;
+        opt.innerText = vName;
+        runVendor.appendChild(opt);
+      });
+      updateRunItemOptions();
+    }
+
+    function updateRunItemOptions() {
+      const vName = document.getElementById('runVendorSelect').value;
+      const itemSelect = document.getElementById('runItemSelect');
+      itemSelect.innerHTML = '';
+      if (activeData.run_charts[vName]) {
+        Object.keys(activeData.run_charts[vName]).forEach(itemCode => {
+          const opt = document.createElement('option');
+          opt.value = itemCode;
+          opt.innerText = itemCode;
+          itemSelect.appendChild(opt);
+        });
+      }
+      updateRunCharts();
+    }
+
+    function applyFilters() {
+      renderAll();
+    }
+
+    function renderAll() {
+      renderKPIs();
+      renderWeeklyChart();
+      renderVendorChart();
+      renderVendorSummaryTable();
+      renderMatrixTable();
+      updateRunCharts();
+      renderFindingsTable();
+      renderCoverageTable();
+    }
+
+    function renderKPIs() {
+      const kpis = activeData.kpis;
+      document.getElementById('kpiScope').innerText = kpis.total_scope;
+      document.getElementById('kpiEval').innerText = kpis.evaluated;
+      document.getElementById('kpiEvalPct').innerText = kpis.evaluated_pct;
+      document.getElementById('kpiPass').innerText = kpis.pass;
+      document.getElementById('kpiWarn').innerText = kpis.warning;
+      document.getElementById('kpiFail').innerText = kpis.fail;
+      document.getElementById('kpiNotEval').innerText = kpis.not_evaluated;
+      document.getElementById('kpiFailRate').innerText = kpis.fail_rate + '%';
+      document.getElementById('kpiExcluded').innerText = kpis.excluded_docs;
+
+      const vSel = document.getElementById('selectVendor').value;
+      const wSel = document.getElementById('selectWeek').value;
+      document.getElementById('layer2Subtitle').innerText = 
+        `${currentCategory} · 2026 · ${wSel === 'All' ? 'all weeks' : wSel} · ${vSel === 'All' ? 'all vendors' : vSel}`;
+    }
+
+    function renderWeeklyChart() {
+      const ctx = document.getElementById('chartWeekly').getContext('2d');
+      if (chartWeeklyInstance) chartWeeklyInstance.destroy();
+
+      const labels = activeData.weekly_status.map(w => w.week.replace('2026-', ''));
+      const passData = activeData.weekly_status.map(w => w.pass);
+      const warnData = activeData.weekly_status.map(w => w.warning);
+      const failData = activeData.weekly_status.map(w => w.fail);
+      const notEvalData = activeData.weekly_status.map(w => w.not_eval);
+
+      chartWeeklyInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'PASS', data: passData, backgroundColor: '#16a34a', stack: 's1' },
+            { label: 'WARNING', data: warnData, backgroundColor: '#f59e0b', stack: 's1' },
+            { label: 'FAIL', data: failData, backgroundColor: '#dc2626', stack: 's1' },
+            { label: 'NOT EVALUATED', data: notEvalData, backgroundColor: '#94a3b8', stack: 's1' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }
+          },
+          scales: {
+            x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 60 } },
+            y: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' } }
+          }
+        }
+      });
+    }
+
+    function renderVendorChart() {
+      const ctx = document.getElementById('chartVendor').getContext('2d');
+      if (chartVendorInstance) chartVendorInstance.destroy();
+
+      const sortedVendors = [...activeData.vendors].sort((a,b) => b.coas - a.coas).slice(0, 10);
+      const labels = sortedVendors.map(v => v.name);
+      const passData = sortedVendors.map(v => v.pass);
+      const warnData = sortedVendors.map(v => v.warn);
+      const failData = sortedVendors.map(v => v.fail);
+      const notEvalData = sortedVendors.map(v => v.not_eval);
+
+      chartVendorInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'PASS', data: passData, backgroundColor: '#16a34a' },
+            { label: 'WARNING', data: warnData, backgroundColor: '#f59e0b' },
+            { label: 'FAIL', data: failData, backgroundColor: '#dc2626' },
+            { label: 'NOT EVALUATED', data: notEvalData, backgroundColor: '#94a3b8' }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }
+          },
+          scales: {
+            x: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' } },
+            y: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 } } }
+          }
+        }
+      });
+    }
+
+    function renderVendorSummaryTable() {
+      const tbody = document.getElementById('tbodyVendorSummary');
+      tbody.innerHTML = '';
+
+      activeData.vendors.forEach(v => {
+        const total = v.coas || (v.pass + v.warn + v.fail + v.not_eval);
+        const pPct = total ? (v.pass / total * 100) : 0;
+        const wPct = total ? (v.warn / total * 100) : 0;
+        const fPct = total ? (v.fail / total * 100) : 0;
+        const nPct = total ? (v.not_eval / total * 100) : 0;
+
+        const tr = document.createElement('tr');
+        tr.onclick = () => {
+          scrollToLayer1Vendor(v.name);
+        };
+
+        tr.innerHTML = `
+          <td style="color: #64748b;">${v.category}</td>
+          <td style="font-weight: 700; color: #0f172a;">${v.name}</td>
+<td style="text-align: right; font-weight: 600;">${v.coas}</td>
+          <td style="text-align: center;">
+            <div class="status-mix-bar" title="Pass: ${v.pass}, Warn: ${v.warn}, Fail: ${v.fail}, Not Eval: ${v.not_eval}">
+              <div class="mix-segment mix-pass" style="width: ${pPct}%;"></div>
+              <div class="mix-segment mix-warn" style="width: ${wPct}%;"></div>
+              <div class="mix-segment mix-fail" style="width: ${fPct}%;"></div>
+              <div class="mix-segment mix-not-eval" style="width: ${nPct}%;"></div>
+            </div>
+          </td>
+          <td style="text-align: right; color: var(--color-pass); font-weight: 600;">${v.pass}</td>
+          <td style="text-align: right; color: var(--color-warn); font-weight: 600;">${v.warn}</td>
+          <td style="text-align: right; color: var(--color-fail); font-weight: 700;">${v.fail}</td>
+          <td style="text-align: right; color: var(--color-not-eval);">${v.not_eval}</td>
+          <td style="text-align: right; font-weight: 600;">${v.fail_rate}</td>
+          <td style="font-size: 12px; color: ${v.fail > 0 ? '#dc2626' : (v.warn > 0 ? '#b45309' : '#475569')};">${v.main_issue}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderMatrixTable() {
+      const headerRow = document.getElementById('matrixHeaderRow');
+      const tbody = document.getElementById('tbodyMatrix');
+      
+      const weeks = ['W22','W23','W24','W25','W26','W27','W28','W29','W30','W31','W32','W33','W34','W35','W36','W37','W38','W39','W40','W41'];
+      headerRow.innerHTML = '<th class="matrix-vendor-col">Vendor</th>';
+      weeks.forEach(w => {
+        headerRow.innerHTML += `<th>${w}</th>`;
+      });
+      headerRow.innerHTML += `<th>Total</th>`;
+
+      tbody.innerHTML = '';
+      activeData.vendors.forEach(v => {
+        const m = v.matrix || {};
+        let rowHtml = `<td class="matrix-vendor-col">${v.name}</td>`;
+        
+        weeks.forEach(w => {
+          const cell = m[w];
+          if (cell) {
+            let badges = '';
+            if (cell.p) badges += `<span class="badge-pill badge-pass" title="Pass: ${cell.p}">${cell.p}</span>`;
+            if (cell.w) badges += `<span class="badge-pill badge-warn" title="Warn: ${cell.w}">${cell.w}</span>`;
+            if (cell.f) badges += `<span class="badge-pill badge-fail" title="Fail: ${cell.f}">${cell.f}</span>`;
+            if (cell.n) badges += `<span class="badge-pill badge-not-eval" title="Not eval: ${cell.n}">${cell.n}</span>`;
+            rowHtml += `<td>${badges}</td>`;
+          } else {
+            rowHtml += `<td></td>`;
+          }
+        });
+
+        // Total column
+        const tot = m['Total'] || { p: v.pass, w: v.warn, f: v.fail, n: v.not_eval };
+        let totBadges = '';
+        if (tot.p) totBadges += `<span class="badge-pill badge-pass">${tot.p}</span>`;
+        if (tot.w) totBadges += `<span class="badge-pill badge-warn">${tot.w}</span>`;
+        if (tot.f) totBadges += `<span class="badge-pill badge-fail">${tot.f}</span>`;
+        if (tot.n) totBadges += `<span class="badge-pill badge-not-eval">${tot.n}</span>`;
+        rowHtml += `<td style="background: #f8fafc; font-weight: bold;">${totBadges}</td>`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = rowHtml;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function scrollToLayer1Vendor(vName) {
+      const runVendor = document.getElementById('runVendorSelect');
+      if (activeData.run_charts[vName]) {
+        runVendor.value = vName;
+        updateRunItemOptions();
+      }
+      document.getElementById('sectionLayer1').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function updateRunCharts() {
+      const vName = document.getElementById('runVendorSelect').value;
+      const itemCode = document.getElementById('runItemSelect').value;
+      const container = document.getElementById('runChartsContainer');
+      
+      // Destroy existing chart instances
+      runChartInstances.forEach(c => c.destroy());
+      runChartInstances = [];
+      container.innerHTML = '';
+
+      if (!activeData.run_charts[vName] || !activeData.run_charts[vName][itemCode]) {
+        container.innerHTML = '<div style="color: #64748b; font-size: 13px; padding: 20px;">No detailed run chart data available for this item.</div>';
+        return;
+      }
+
+      const tests = activeData.run_charts[vName][itemCode];
+      tests.forEach((t, idx) => {
+        const card = document.createElement('div');
+        card.className = 'run-chart-card';
+        
+        const specLabel = (t.lsl && t.usl) ? `${t.lsl} - ${t.usl}` : (t.lsl ? `≥${t.lsl}` : `≤${t.usl}`);
+        card.innerHTML = `
+          <div class="run-chart-title">${vName} · ${itemCode} · ${t.param}</div>
+          <div class="run-chart-spec">n=${t.points.length} · printed tolerance: ${specLabel} ${t.unit || ''}</div>
+          <div style="position: relative; height: 180px; width: 100%;">
+            <canvas id="runChart_${idx}"></canvas>
+          </div>
+        `;
+        container.appendChild(card);
+
+        const ctx = document.getElementById(`runChart_${idx}`).getContext('2d');
+        const pointLabels = t.points.map(p => `${p.po}
+${p.lot}
+${p.date}`);
+        const values = t.points.map(p => p.val);
+        const pointColors = t.points.map(p => p.status === 'FAIL' ? '#dc2626' : (p.status === 'WARNING' ? '#f59e0b' : '#16a34a'));
+
+        // Annotations / Threshold lines
+        const annotations = [];
+        if (t.usl !== null && t.usl !== undefined) {
+          annotations.push({
+            type: 'line',
+            yMin: t.usl,
+            yMax: t.usl,
+            borderColor: '#991b1b',
+            borderWidth: 2,
+            borderDash: [6, 4],
+            label: { display: true, content: 'USL: ' + t.usl, position: 'end' }
+          });
+        }
+        if (t.lsl !== null && t.lsl !== undefined) {
+          annotations.push({
+            type: 'line',
+            yMin: t.lsl,
+            yMax: t.lsl,
+            borderColor: '#dc2626',
+            borderWidth: 2,
+            borderDash: [6, 4],
+            label: { display: true, content: 'LSL: ' + t.lsl, position: 'end' }
+          });
+        }
+
+        const chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: pointLabels,
+            datasets: [
+              {
+                label: t.param,
+                data: values,
+                borderColor: '#0284c7',
+                borderWidth: 2,
+                pointBackgroundColor: pointColors,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                fill: false,
+                tension: 0.1
+              },
+              ...(t.usl ? [{
+                label: 'USL',
+                data: Array(t.points.length).fill(t.usl),
+                borderColor: '#991b1b',
+                borderWidth: 1.5,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+              }] : []),
+              ...(t.lsl ? [{
+                label: 'LSL',
+                data: Array(t.points.length).fill(t.lsl),
+                borderColor: '#dc2626',
+                borderWidth: 1.5,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+              }] : [])
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+              y: { grid: { color: '#f1f5f9' } }
+            }
+          }
+        });
+        runChartInstances.push(chart);
+      });
+    }
+
+    function renderFindingsTable() {
+      const tbody = document.getElementById('tbodyFindings');
+      tbody.innerHTML = '';
+      const findings = activeData.findings || [];
+      document.getElementById('findingsCountDisplay').innerText = `– ${findings.filter(f=>f.status==='FAIL').length} FAIL · ${findings.filter(f=>f.status==='WARNING').length} WARNING`;
+
+      findings.forEach(f => {
+        const tr = document.createElement('tr');
+        const badgeClass = f.status === 'FAIL' ? 'bg-fail' : 'bg-warn';
+        tr.innerHTML = `
+          <td><span class="legend-badge ${badgeClass}">${f.status}</span></td>
+          <td style="white-space: nowrap;">${f.week}</td>
+          <td style="white-space: nowrap;">${f.date}</td>
+          <td>${f.category}</td>
+          <td style="font-weight: 600;">${f.vendor}</td>
+          <td style="font-family: monospace; font-size: 12px;">${f.po}</td>
+          <td>${f.item}</td>
+          <td>${f.lot}</td>
+          <td style="font-weight: 600;">${f.test}</td>
+          <td style="font-family: monospace;">${f.spec}</td>
+          <td style="text-align: right; font-weight: 700; color: ${f.status==='FAIL'?'#dc2626':'#f59e0b'};">${f.result}</td>
+          <td style="font-size: 11.5px; color: #64748b;">${f.margin}</td>
+          <td style="font-size: 11.5px;">${f.readings}</td>
+          <td style="font-weight: 600; color: ${f.judgement==='PASS'?'#16a34a':'#475569'};">${f.judgement}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderCoverageTable() {
+      const tbody = document.getElementById('tbodyCoverage');
+      tbody.innerHTML = '';
+      (activeData.coverage || []).forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.category}</td>
+          <td style="font-weight: 600;">${c.vendor}</td>
+          <td style="text-align: right;">${c.docs}</td>
+          <td style="text-align: right;">${c.read}</td>
+          <td style="text-align: right; color: #16a34a; font-weight: 600;">${c.eval}</td>
+          <td style="text-align: right; color: ${c.not_eval > 0 ? '#64748b' : '#94a3b8'};">${c.not_eval}</td>
+          <td style="text-align: right;">${c.non_coa}</td>
+          <td style="text-align: right;">${c.dup}</td>
+          <td style="font-size: 12px; color: #475569;">${c.reason || '—'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Check remote JSON updates (Auto-refresh)
+    async function checkRemoteDataUpdates() {
+      try {
+        const resp = await fetch('./coa_dashboard_data.json?t=' + Date.now());
+        if (resp.ok) {
+          const freshData = await resp.json();
+          if (JSON.stringify(freshData.kpis) !== JSON.stringify(activeData.kpis)) {
+            console.log('Detected fresh data from SharePoint! Re-rendering dashboard...');
+            activeData = freshData;
+            document.getElementById('genTimeDisplay').innerText = activeData.metadata.generated_at;
+            document.getElementById('liveStatusText').innerText = 'Data Updated Live';
+            renderAll();
+          }
+        }
+      } catch (e) {
+        // Running locally file:// - fallback silent
+      }
+    }
+
+    function reloadDashboardData() {
+      checkRemoteDataUpdates().then(() => {
+        renderAll();
+        alert('Dashboard view refreshed.');
+      });
+    }
+  </script>
+<script>
+// Dynamic threshold interaction layer. All statuses below are derived at runtime from raw Result + printed Spec.
+let viewData=null;
+let timeMode='week';
+const STATUS_RANK={'NOT EVALUATED':1,'PASS':2,'WARNING':3,'FAIL':4};
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dateKey=v=>v==='Unknown'?'9999-99-99':v;
+const weekKey=v=>v==='Unknown'?'9999-W99':v;
+function fillSelect(id,vals,allLabel){const el=document.getElementById(id);if(!el)return;el.innerHTML='';vals.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=(v==='All'||v==='All materials')?allLabel:v;el.appendChild(o);});}
+function setTimeMode(mode){timeMode=mode;document.getElementById('modeWeekBtn').classList.toggle('active',mode==='week');document.getElementById('modeDateBtn').classList.toggle('active',mode==='date');document.getElementById('weekFilterGroup').style.display=mode==='week'?'flex':'none';document.getElementById('dateFilterGroup').style.display=mode==='date'?'flex':'none';renderAll();}
+function updateWarningPct(val){warningPercentage=Number(val);document.getElementById('warnPctVal').innerText=String(val);renderAll();updateRunCharts();}
+function normalizedText(s){return String(s??'').replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>({'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'}[c])).replace(/[×*]/g,'x').replace(/−/g,'-').replace(/,/g,'.');}
+function parseScalar(raw){const s=normalizedText(raw).replace(/\s+/g,'');let m=s.match(/^([+-]?(?:\d+(?:\.\d+)?|\.\d+))x10\^?([+-]?\d+)$/i);if(m)return Number(m[1])*10**Number(m[2]);m=s.match(/^10\^([+-]?\d+)$/i);if(m)return 10**Number(m[1]);m=s.match(/^([+-]?(?:\d+(?:\.\d+)?|\.\d+))[eE]([+-]?\d+)$/);if(m)return Number(m[1])*10**Number(m[2]);m=s.match(/[+-]?(?:\d+(?:\.\d+)?|\.\d+)/);return m?Number(m[0]):null;}
+function parseReadings(raw){let s=normalizedText(raw);s=s.replace(/(?<=\d)-(?=\d)/g,';');const vals=[],spans=[];for(const m of s.matchAll(/[+-]?(?:\d+(?:\.\d+)?|\.\d+)\s*x\s*10\s*\^?\s*[+-]?\d+/gi)){vals.push(parseScalar(m[0]));spans.push([m.index,m.index+m[0].length]);}let rem=[...s].map((c,i)=>spans.some(([a,b])=>a<=i&&i<b)?' ':c).join('');for(const m of rem.matchAll(/[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?/g))vals.push(Number(m[0]));return vals.filter(Number.isFinite);}
+function dynamicBounds(t){if(t.spec_ok===false)return{lsl:null,usl:null,has:false};let l=t.lsl,u=t.usl;if(l!==null&&l!==undefined)l=Number(l);else l=null;if(u!==null&&u!==undefined)u=Number(u);else u=null;if(l!==null||u!==null)return{lsl:l,usl:u,has:true};const s=normalizedText(t.spec).trim();if(!s)return{lsl:null,usl:null,has:false};let m=s.match(/(?:≤|<=|<)\s*(10\s*\^\s*[+-]?\d+|[0-9.]+(?:\s*x\s*10\s*\^?\s*[+-]?\d+)?)/i);if(m)return{lsl:null,usl:parseScalar(m[1]),has:true};m=s.match(/(?:≥|>=|>)\s*(10\s*\^\s*[+-]?\d+|[0-9.]+(?:\s*x\s*10\s*\^?\s*[+-]?\d+)?)/i);if(m)return{lsl:parseScalar(m[1]),usl:null,has:true};m=s.match(/([+-]?\d+(?:\.\d+)?)\s*±\s*(\d+(?:\.\d+)?)\s*(%)?/);if(m){const c=Number(m[1]);let tol=Number(m[2]);if(m[3])tol=Math.abs(c)*tol/100;return{lsl:c-tol,usl:c+tol,has:true};}m=s.match(/^\s*±\s*(\d+(?:\.\d+)?)\s*%?\s*$/);if(m){const x=Number(m[1]);return{lsl:-x,usl:x,has:true};}if(/[~～]/.test(s)){const p=s.split(/[~～]/,2).map(parseScalar);if(p.every(Number.isFinite))return{lsl:Math.min(...p),usl:Math.max(...p),has:true};}m=s.match(/^\s*([+-]?\d+(?:\.\d+)?)\s*-\s*([+-]?\d+(?:\.\d+)?)\s*%?\s*$/);if(m){const a=Number(m[1]),b=Number(m[2]);return{lsl:Math.min(a,b),usl:Math.max(a,b),has:true};}return{lsl:null,usl:null,has:false};}
+function dynamicEvaluate(t){const b=dynamicBounds(t),readings=Array.isArray(t.values)?t.values:parseReadings(t.result);if(!b.has||!readings.length)return{status:'NOT EVALUATED',lsl:b.lsl,usl:b.usl,proximity:null,margin:'Missing/ambiguous numeric Spec or Result'};const outside=readings.some(v=>(b.lsl!==null&&v<b.lsl-1e-12)||(b.usl!==null&&v>b.usl+1e-12));if(outside)return{status:'FAIL',lsl:b.lsl,usl:b.usl,proximity:null,margin:'Outside printed numeric limit'};const margins=[];for(const v of readings){if(b.lsl!==null&&b.usl!==null&&b.usl>b.lsl){margins.push((v-b.lsl)/(b.usl-b.lsl)*100,(b.usl-v)/(b.usl-b.lsl)*100);}else if(b.lsl!==null&&Math.abs(b.lsl)>1e-12){margins.push((v-b.lsl)/Math.abs(b.lsl)*100);}else if(b.usl!==null&&Math.abs(b.usl)>1e-12){margins.push((b.usl-v)/Math.abs(b.usl)*100);}}if(!margins.length)return{status:'NOT EVALUATED',lsl:b.lsl,usl:b.usl,proximity:null,margin:'Numeric limit cannot be normalized for near-limit percentage'};const proximity=Math.max(0,Math.min(...margins));return{status:proximity<=warningPercentage?'WARNING':'PASS',lsl:b.lsl,usl:b.usl,proximity,margin:`${proximity.toFixed(1)}% to nearest limit (threshold ${warningPercentage}%)`};}
+function deriveRecords(){return(activeData.records||[]).map(r=>{const tests=(r.tests||[]).map(t=>{const e=dynamicEvaluate(t);return{...t,status:e.status,lsl:e.lsl,usl:e.usl,proximity:e.proximity,margin:e.margin};});const evaluable=tests.filter(t=>t.status!=='NOT EVALUATED');const status=evaluable.length?evaluable.reduce((a,t)=>STATUS_RANK[t.status]>STATUS_RANK[a]?t.status:a,'PASS'):'NOT EVALUATED';return{...r,tests,status};});}
+function filterRecord(r){const sl=document.getElementById('selectSlice')?.value||'All materials',yr=document.getElementById('selectYear')?.value||'All',wk=document.getElementById('selectWeek')?.value||'All',dt=document.getElementById('selectDate')?.value||'All',vd=document.getElementById('selectVendor')?.value||'All';const timeOK=timeMode==='week'?(wk==='All'||r.week===wk):(dt==='All'||r.date===dt);return(sl==='All materials'||r.category===sl)&&(yr==='All'||r.year===yr)&&timeOK&&(vd==='All'||r.vendor===vd);}
+function deriveView(){const records=deriveRecords().filter(filterRecord),statuses=['PASS','WARNING','FAIL','NOT EVALUATED'],count=s=>records.filter(r=>r.status===s).length,evaluated=count('PASS')+count('WARNING')+count('FAIL'),timeline={},weekMap={},vendorMap={};records.forEach(r=>{const tk=timeMode==='week'?r.week:r.date;timeline[tk]??={pass:0,warning:0,fail:0,not_eval:0};weekMap[r.week]??={pass:0,warning:0,fail:0,not_eval:0};const sk=r.status==='NOT EVALUATED'?'not_eval':r.status.toLowerCase();timeline[tk][sk]++;weekMap[r.week][sk]++;(vendorMap[r.vendor]??=[]).push(r);});const tkSort=(a,b)=>timeMode==='week'?weekKey(a).localeCompare(weekKey(b)):dateKey(a).localeCompare(dateKey(b)),timeline_status=Object.keys(timeline).sort(tkSort).map(k=>({period:k,...timeline[k]})),weekly_status=Object.keys(weekMap).sort((a,b)=>weekKey(a).localeCompare(weekKey(b))).map(k=>({week:k,...weekMap[k]})),vendors=Object.entries(vendorMap).map(([name,rs])=>{const c=Object.fromEntries(statuses.map(s=>[s,rs.filter(r=>r.status===s).length])),matrix={};rs.forEach(r=>{matrix[r.week]??={p:0,w:0,f:0,n:0};matrix[r.week][r.status==='PASS'?'p':r.status==='WARNING'?'w':r.status==='FAIL'?'f':'n']++;});matrix.Total={p:c.PASS,w:c.WARNING,f:c.FAIL,n:c['NOT EVALUATED']};const ev=c.PASS+c.WARNING+c.FAIL;return{name,category:[...new Set(rs.map(r=>r.category))].join(' / '),materials:[...new Set(rs.map(r=>r.item_display))].join('; '),coas:rs.length,pass:c.PASS,warn:c.WARNING,fail:c.FAIL,not_eval:c['NOT EVALUATED'],fail_rate:(ev?c.FAIL/ev*100:0).toFixed(1)+'%',main_issue:c.FAIL?'Out-of-spec test':c.WARNING?`Near-limit test at ${warningPercentage}%`:c['NOT EVALUATED']?'Some COAs lack numeric Spec/Result':'No issue',matrix};}).sort((a,b)=>b.coas-a.coas||a.name.localeCompare(b.name)),coverage=vendors.map(v=>({category:v.category,vendor:v.name,docs:v.coas,read:v.coas,eval:v.coas-v.not_eval,not_eval:v.not_eval,non_coa:0,dup:0,reason:v.not_eval?`${v.not_eval} record(s) have no evaluable numeric Spec/Result`:`All records numerically evaluated at ${warningPercentage}% threshold`})),findings=[];records.forEach(r=>r.tests.forEach(t=>{if(t.status==='FAIL'||t.status==='WARNING')findings.push({status:t.status,week:r.week,date:r.date,category:r.category,vendor:r.vendor,po:r.po||'—',item:r.item_display,lot:r.lot||'—',test:t.name,spec:t.spec||'—',result:t.result,margin:t.margin,readings:t.result,judgement:t.judgement||r.vendor_judgement||'—',record_id:r.id});}));return{records,timeline_status,weekly_status,vendors,coverage,findings,kpis:{total_scope:records.length,evaluated,evaluated_pct:records.length?Math.round(evaluated/records.length*100):0,pass:count('PASS'),warning:count('WARNING'),fail:count('FAIL'),not_evaluated:count('NOT EVALUATED'),fail_rate:evaluated?(count('FAIL')/evaluated*100).toFixed(1):'0.0',excluded_docs:activeData.kpis.excluded_docs}};}
+function toggleLayer1Charts(){const vp=document.getElementById('runChartsViewport'),btn=document.getElementById('layer1ExpandBtn');if(!vp||!btn)return;const open=vp.classList.toggle('expanded');btn.textContent=open?'▲ Thu gọn':'▼ Xem tất cả biểu đồ';btn.setAttribute('aria-expanded',open?'true':'false');}
+function initFilters(){const rs=activeData.records||[],slices=['All materials',...new Set(rs.map(r=>r.category).sort())],years=['All',...new Set(rs.map(r=>r.year).filter(y=>y!=='Unknown').sort()),...(rs.some(r=>r.year==='Unknown')?['Unknown']:[])],weeks=['All',...new Set(rs.map(r=>r.week).sort((a,b)=>weekKey(a).localeCompare(weekKey(b))))],dates=['All',...new Set(rs.map(r=>r.date).filter(x=>x!=='Unknown').sort((a,b)=>b.localeCompare(a))),...(rs.some(r=>r.date==='Unknown')?['Unknown']:[])],vendors=['All',...new Set(rs.map(r=>r.vendor).sort())];fillSelect('selectSlice',slices,'All materials');fillSelect('selectYear',years,'All years');fillSelect('selectWeek',weeks,'All weeks');fillSelect('selectDate',dates,'All dates');fillSelect('selectVendor',vendors,'All vendors');const rv=document.getElementById('runVendorSelect');rv.innerHTML='';Object.keys(activeData.run_charts||{}).sort().forEach(v=>rv.add(new Option(v,v)));updateRunItemOptions();}
+function applyFilters(){renderAll();}
+function renderAll(){viewData=deriveView();renderKPIs();renderWeeklyChart();renderVendorChart();renderVendorSummaryTable();renderMatrixTable();renderFindingsTable();renderRecordsTable();renderCoverageTable();}
+function renderKPIs(){const k=viewData.kpis;[['kpiScope',k.total_scope],['kpiEval',k.evaluated],['kpiEvalPct',k.evaluated_pct],['kpiPass',k.pass],['kpiWarn',k.warning],['kpiFail',k.fail],['kpiNotEval',k.not_evaluated],['kpiFailRate',k.fail_rate+'%'],['kpiExcluded',k.excluded_docs]].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.innerText=v;});const sl=document.getElementById('selectSlice').value,y=document.getElementById('selectYear').value,w=document.getElementById('selectWeek').value,dt=document.getElementById('selectDate').value,v=document.getElementById('selectVendor').value,period=timeMode==='week'?(w==='All'?'all weeks':w):(dt==='All'?'all dates':dt);document.getElementById('layer2Subtitle').innerText=`${sl} · ${y==='All'?'all years':y} · ${period} · ${v==='All'?'all vendors':v} · near-limit ≤${warningPercentage}%`;}
+function chartUnavailable(canvas,msg){const p=canvas.parentElement;p.innerHTML=`<div class="empty-note">${msg}</div>`;}
+function renderWeeklyChart(){
+  const canvas=document.getElementById('chartWeekly'),title=document.getElementById('chartTimeTitle');
+  if(title)title.textContent=timeMode==='week'?'COAs per ISO week by dynamic status':'COAs per COA date by dynamic status';
+  if(typeof Chart==='undefined'){
+    chartUnavailable(canvas,'Charts unavailable offline; all values remain in the tables below.');
+    return;
+  }
+  if(chartWeeklyInstance)chartWeeklyInstance.destroy();
+  const x=viewData.timeline_status;
+  const weeklyScroll=document.getElementById('chartWeeklyScroll');
+  const weeklyInner=document.getElementById('chartWeeklyInner');
+  const dateMode=timeMode==='date';
+  if(weeklyInner){
+    const visibleWidth=weeklyScroll?weeklyScroll.clientWidth:0;
+    const widthPerPeriod=dateMode?34:48;
+    weeklyInner.style.width=`${Math.max(visibleWidth,720,x.length*widthPerPeriod+64)}px`;
+  }
+  const barSizing={
+    categoryPercentage:dateMode?0.72:0.8,
+    barPercentage:0.86,
+    maxBarThickness:dateMode?20:32
+  };
+  chartWeeklyInstance=new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:x.map(r=>r.period),
+      datasets:[
+        {label:'PASS',data:x.map(r=>r.pass),backgroundColor:'#16a34a',stack:'s1',...barSizing},
+        {label:'WARNING',data:x.map(r=>r.warning),backgroundColor:'#f59e0b',stack:'s1',...barSizing},
+        {label:'FAIL',data:x.map(r=>r.fail),backgroundColor:'#dc2626',stack:'s1',...barSizing},
+        {label:'NOT EVALUATED',data:x.map(r=>r.not_eval),backgroundColor:'#94a3b8',stack:'s1',...barSizing}
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      animation:{duration:0},
+      plugins:{legend:{position:'top',labels:{boxWidth:12,font:{size:11}}}},
+      scales:{
+        x:{
+          stacked:true,
+          grid:{display:false},
+          ticks:{font:{size:9},maxRotation:dateMode?45:60,minRotation:dateMode?45:0,autoSkip:true,autoSkipPadding:8}
+        },
+        y:{stacked:true,beginAtZero:true}
+      }
+    }
+  });
+  // Open at the newest period on the right; the user can scroll left for history.
+  if(weeklyScroll){
+    const moveToLatest=()=>{weeklyScroll.scrollLeft=weeklyScroll.scrollWidth;};
+    moveToLatest();
+    requestAnimationFrame(()=>requestAnimationFrame(moveToLatest));
+    // Run once after the remaining dashboard sections finish expanding the page.
+    setTimeout(moveToLatest,50);
+  }
+}
+function renderVendorChart(){
+  const canvas=document.getElementById('chartVendor');
+  if(typeof Chart==='undefined'){
+    chartUnavailable(canvas,'Charts unavailable offline; all values remain in the tables below.');
+    return;
+  }
+  if(chartVendorInstance)chartVendorInstance.destroy();
+  const x=viewData.vendors;
+  const vendorInner=document.getElementById('chartVendorInner');
+  if(vendorInner)vendorInner.style.height=`${Math.max(300,x.length*34+65)}px`;
+  const shortVendorName=name=>{
+    const full=String(name??'');
+    const maxChars=24;
+    if(full.length<=maxChars)return full;
+    const clipped=full.slice(0,maxChars-1);
+    const lastSpace=clipped.lastIndexOf(' ');
+    return `${lastSpace>=12?clipped.slice(0,lastSpace):clipped}…`;
+  };
+  chartVendorInstance=new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:x.map(r=>r.name),
+      datasets:[
+        {label:'PASS',data:x.map(r=>r.pass),backgroundColor:'#16a34a'},
+        {label:'WARNING',data:x.map(r=>r.warn),backgroundColor:'#f59e0b'},
+        {label:'FAIL',data:x.map(r=>r.fail),backgroundColor:'#dc2626'},
+        {label:'NOT EVALUATED',data:x.map(r=>r.not_eval),backgroundColor:'#94a3b8'}
+      ]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'top',labels:{boxWidth:12,font:{size:11}}},
+        tooltip:{callbacks:{title:items=>{
+          const index=items&&items.length?items[0].dataIndex:-1;
+          return index>=0&&x[index]?x[index].name:'';
+        }}}
+      },
+      scales:{
+        x:{stacked:true,beginAtZero:true},
+        y:{
+          stacked:true,
+          grid:{display:false},
+          ticks:{
+            font:{size:11},
+            autoSkip:false,
+            padding:4,
+            callback:function(value){return shortVendorName(this.getLabelForValue(value));}
+          }
+        }
+      }
+    }
+  });
+}
+function renderVendorSummaryTable(){const tb=document.getElementById('tbodyVendorSummary');tb.innerHTML='';viewData.vendors.forEach(v=>{const total=v.coas||1,p=v.pass/total*100,w=v.warn/total*100,f=v.fail/total*100,n=v.not_eval/total*100,tr=document.createElement('tr');tr.onclick=()=>scrollToLayer1Vendor(v.name);tr.innerHTML=`<td>${esc(v.category)}</td><td style="font-weight:700">${esc(v.name)}</td><td style="text-align:right">${v.coas}</td><td><div class="status-mix-bar"><div class="mix-segment mix-pass" style="width:${p}%"></div><div class="mix-segment mix-warn" style="width:${w}%"></div><div class="mix-segment mix-fail" style="width:${f}%"></div><div class="mix-segment mix-not-eval" style="width:${n}%"></div></div></td><td style="text-align:right;color:#16a34a">${v.pass}</td><td style="text-align:right;color:#f59e0b">${v.warn}</td><td style="text-align:right;color:#dc2626">${v.fail}</td><td style="text-align:right;color:#64748b">${v.not_eval}</td><td style="text-align:right">${v.fail_rate}</td><td>${esc(v.main_issue)}</td>`;tb.appendChild(tr);});if(!viewData.vendors.length)tb.innerHTML='<tr><td colspan="11" class="empty-note">No records match the selected filters.</td></tr>';}
+function renderMatrixTable(){
+  const hr=document.getElementById('matrixHeaderRow'),tb=document.getElementById('tbodyMatrix'),table=document.getElementById('tableMatrix');
+  // weekly_status is already chronological; Unknown is deliberately sorted last by weekKey().
+  const weeks=viewData.weekly_status.map(x=>x.week);
+  table.style.minWidth=`${Math.max(1000,220+(weeks.length*76)+120)}px`;
+  hr.innerHTML='<th class="matrix-vendor-col">Vendor</th>'+weeks.map(w=>`<th>${esc(w)}</th>`).join('')+'<th class="matrix-total-col">Total</th>';
+  tb.innerHTML='';
+  viewData.vendors.forEach(v=>{
+    let s=`<td class="matrix-vendor-col">${esc(v.name)}</td>`;
+    const sum={p:0,w:0,f:0,n:0};
+    weeks.forEach(w=>{
+      const c=v.matrix[w]||{p:0,w:0,f:0,n:0};
+      sum.p+=c.p||0;sum.w+=c.w||0;sum.f+=c.f||0;sum.n+=c.n||0;
+      s+=`<td>${c.p?`<span class="badge-pill badge-pass">${c.p}</span>`:''}${c.w?`<span class="badge-pill badge-warn">${c.w}</span>`:''}${c.f?`<span class="badge-pill badge-fail">${c.f}</span>`:''}${c.n?`<span class="badge-pill badge-not-eval">${c.n}</span>`:''}</td>`;
+    });
+    const expected={p:v.pass||0,w:v.warn||0,f:v.fail||0,n:v.not_eval||0};
+    if(sum.p!==expected.p||sum.w!==expected.w||sum.f!==expected.f||sum.n!==expected.n){console.error('Matrix total mismatch',v.name,{sum,expected,weeks});}
+    // Total is calculated from the displayed week cells, so no hidden week can be omitted.
+    s+=`<td class="matrix-total-col">${sum.p?`<span class="badge-pill badge-pass">${sum.p}</span>`:''}${sum.w?`<span class="badge-pill badge-warn">${sum.w}</span>`:''}${sum.f?`<span class="badge-pill badge-fail">${sum.f}</span>`:''}${sum.n?`<span class="badge-pill badge-not-eval">${sum.n}</span>`:''}</td>`;
+    const tr=document.createElement('tr');tr.innerHTML=s;tb.appendChild(tr);
+  });
+}
+function updateRunItemOptions(){const v=document.getElementById('runVendorSelect').value,el=document.getElementById('runItemSelect'),items=Object.keys(activeData.run_charts?.[v]||{}).sort();el.innerHTML='';items.forEach(x=>el.add(new Option(x,x)));updateRunTestOptions();}
+function updateRunTestOptions(){const v=document.getElementById('runVendorSelect').value,item=document.getElementById('runItemSelect').value,el=document.getElementById('runTestSelect'),tests=activeData.run_charts?.[v]?.[item]||[];el.innerHTML='';el.add(new Option('All test points (small multiples)','ALL'));tests.forEach(t=>el.add(new Option(t.param,t.param)));updateRunCharts();}
+function scrollToLayer1Vendor(v){const el=document.getElementById('runVendorSelect');if(activeData.run_charts?.[v]){el.value=v;updateRunItemOptions();}document.getElementById('sectionLayer1').scrollIntoView({behavior:'smooth'});}
+function pointDynamicStatus(series,p){const e=dynamicEvaluate({spec:series.spec_display||'',result:p.raw,values:p.values,spec_ok:series.spec_ok,lsl:series.lsl,usl:series.usl});return e.status;}
+function updateRunCharts(){const v=document.getElementById('runVendorSelect').value,item=document.getElementById('runItemSelect').value,chosen=document.getElementById('runTestSelect').value,box=document.getElementById('runChartsContainer');runChartInstances.forEach(c=>c.destroy());runChartInstances=[];box.innerHTML='';let tests=activeData.run_charts?.[v]?.[item]||[];if(chosen&&chosen!=='ALL')tests=tests.filter(t=>t.param===chosen);if(!tests.length){box.innerHTML='<div class="empty-note">No run-chart series for this selection.</div>';return;}if(typeof Chart==='undefined'){box.innerHTML='<div class="empty-note">Run charts require Chart.js; exact readings remain available in the complete register.</div>';return;}tests.forEach((t,i)=>{const card=document.createElement('div');card.className='run-chart-card';const spec=t.lsl!=null&&t.usl!=null?`${t.lsl} - ${t.usl}`:t.lsl!=null?`≥${t.lsl}`:t.usl!=null?`≤${t.usl}`:'not printed';card.innerHTML=`<div class="run-chart-title">${esc(v)} · ${esc(t.param)}</div><div class="run-chart-spec">n=${t.points.length} · limit: ${esc(spec)} ${esc(t.unit||'')} · dynamic warning ≤${warningPercentage}%</div><div style="height:180px"><canvas id="dynamicRun_${i}"></canvas></div>`;box.appendChild(card);const pointStatuses=t.points.map(p=>pointDynamicStatus(t,p)),sets=[{label:t.param,data:t.points.map(p=>p.val),borderColor:'#0284c7',borderWidth:2,pointBackgroundColor:pointStatuses.map(s=>s==='FAIL'?'#dc2626':s==='WARNING'?'#f59e0b':s==='PASS'?'#16a34a':'#94a3b8'),pointRadius:6,tension:.1}];if(t.usl!=null)sets.push({label:'USL',data:t.points.map(()=>t.usl),borderColor:'#991b1b',borderDash:[5,5],pointRadius:0});if(t.lsl!=null)sets.push({label:'LSL',data:t.points.map(()=>t.lsl),borderColor:'#dc2626',borderDash:[5,5],pointRadius:0});runChartInstances.push(new Chart(document.getElementById(`dynamicRun_${i}`),{type:'line',data:{labels:t.points.map(p=>`${p.po} · ${p.date}`),datasets:sets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{afterLabel:c=>{const p=t.points[c.dataIndex];return `Item: ${p.item||'—'}\nLot: ${p.lot||'—'}\nDynamic status: ${pointStatuses[c.dataIndex]}\nOriginal test: ${p.source_test_name}\nRaw: ${p.raw}\nDate basis: ${p.date_basis}\nSource: ${p.source}`;}}}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:'#f1f5f9'}}}}}));});}
+function renderFindingsTable(){const tb=document.getElementById('tbodyFindings'),fs=(viewData.findings||[]).slice().sort((a,b)=>dateKey(b.date).localeCompare(dateKey(a.date))||a.vendor.localeCompare(b.vendor)),ft=fs.filter(f=>f.status==='FAIL').length,wt=fs.filter(f=>f.status==='WARNING').length;document.getElementById('findingsCountDisplay').innerText=`- ${ft} FAIL test${ft===1?'':'s'} · ${wt} WARNING tests | COAs/lots: ${viewData.kpis.fail} FAIL · ${viewData.kpis.warning} WARNING`;const unitNote=document.getElementById('findingsUnitNote');if(unitNote)unitNote.textContent=`Dynamic at near-limit ≤${warningPercentage}%. KPI cards count COA/lot records by worst evaluable test; Findings count individual tests.`;tb.innerHTML='';fs.forEach(f=>{const tr=document.createElement('tr');tr.innerHTML=`<td><span class="legend-badge ${f.status==='FAIL'?'bg-fail':'bg-warn'}">${f.status}</span></td><td>${esc(f.week)}</td><td>${esc(f.date)}</td><td>${esc(f.category)}</td><td>${esc(f.vendor)}</td><td>${esc(f.po)}</td><td>${esc(f.item)}</td><td>${esc(f.lot)}</td><td>${esc(f.test)}</td><td>${esc(f.spec)}</td><td style="text-align:right">${esc(f.result)}</td><td>${esc(f.margin)}</td><td>${esc(f.readings)}</td><td>${esc(f.judgement)}</td>`;tb.appendChild(tr);});if(!fs.length)tb.innerHTML='<tr><td colspan="14" class="empty-note">No dynamic FAIL or WARNING test findings in this filter.</td></tr>';}
+function statusBadge(s){const c=s==='PASS'?'bg-pass':s==='WARNING'?'bg-warn':s==='FAIL'?'bg-fail':'bg-not-eval';return `<span class="legend-badge ${c}">${esc(s)}</span>`;}
+function renderRecordsTable(){const tb=document.getElementById('tbodyRecords');tb.innerHTML='';document.getElementById('recordsCountDisplay').innerText=`- ${viewData.records.length} record(s) · dynamic threshold ${warningPercentage}%`;viewData.records.slice().sort((a,b)=>{if(a.date==='Unknown'&&b.date!=='Unknown')return 1;if(b.date==='Unknown'&&a.date!=='Unknown')return-1;return b.date.localeCompare(a.date)||a.vendor.localeCompare(b.vendor);}).forEach(r=>{const tests=r.tests.map(t=>`<div>${esc(t.name)}<br><span class="record-meta">COA: ${esc(t.source_test_name||t.name)}</span></div><div>${esc(t.unit||'—')}<br><span class="record-meta">COA: ${esc(t.source_unit||'—')}</span></div><div>${esc(t.spec||'—')}</div><div>${esc(t.result||'—')}</div><div class="st-${t.status.replaceAll(' ','-')}">${esc(t.status)}${t.proximity!==null?`<br><span style="font-weight:400">${t.proximity.toFixed(1)}%</span>`:''}</div>`).join(''),hdr='<div class="th">Test</div><div class="th">Unit</div><div class="th">Printed spec</div><div class="th">Result</div><div class="th">Dynamic evaluation</div>',tr=document.createElement('tr');tr.innerHTML=`<td><div>${esc(r.date)}</div><div class="record-meta">${esc(r.week)}</div><div class="date-basis">${esc(r.date_basis||'Date basis unavailable')}</div></td><td>${esc(r.category)}</td><td style="font-weight:700">${esc(r.vendor)}</td><td><div class="record-product">${esc(r.item_display)}</div><div class="record-material">Original COA name: ${esc(r.source_product_name||r.product_name)}<br>Original item text: ${esc(r.source_item_code||'Not stated')}</div></td><td><div>${esc(r.po||'—')}</div><div class="record-meta">Item: ${esc(r.item||'—')}<br>Lot/cert: ${esc(r.lot||r.certificate||'—')}<br>Qty: ${esc(r.quantity||'—')}</div></td><td>${statusBadge(r.status)}<div class="record-meta" style="margin-top:5px">Vendor judgement: ${esc(r.vendor_judgement||'—')}<br>${esc(r.notes||'')}</div></td><td class="record-source">${esc(r.source_file)}<br><span class="record-meta">${esc(r.source_kind)}</span></td><td><details class="test-detail"><summary>${r.tests.length} test row(s)</summary><div class="test-grid">${hdr}${tests}</div></details></td>`;tb.appendChild(tr);});if(!viewData.records.length)tb.innerHTML='<tr><td colspan="8" class="empty-note">No records match the selected filters.</td></tr>';}
+function renderCoverageTable(){const tb=document.getElementById('tbodyCoverage');tb.innerHTML='';viewData.coverage.forEach(c=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${esc(c.category)}</td><td style="font-weight:600">${esc(c.vendor)}</td><td style="text-align:right">${c.docs}</td><td style="text-align:right">${c.read}</td><td style="text-align:right;color:#16a34a">${c.eval}</td><td style="text-align:right">${c.not_eval}</td><td style="text-align:right">${c.non_coa}</td><td style="text-align:right">${c.dup}</td><td>${esc(c.reason)}</td>`;tb.appendChild(tr);});if(!viewData.coverage.length)tb.innerHTML='<tr><td colspan="9" class="empty-note">No coverage rows match the selected filters.</td></tr>';}
+async function checkRemoteDataUpdates(){return false;}
+function reloadDashboardData(){renderAll();updateRunCharts();}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var el=document.getElementById('dataStamp');if(!el||!activeData.metadata)return;
+  var g=activeData.metadata.generated_at||'';
+  el.textContent='Data updated '+g;
+  var t=Date.parse(g.replace(' GMT+7','+07:00').replace(' ','T'));
+  if(t&&Date.now()-t>2*3600*1000){el.style.color='#fca5a5';el.textContent+=' (old data)';}
+});
+</script>
+<script>
+/* Linked slicers: mỗi bộ lọc chỉ cho chọn giá trị còn dữ liệu theo các bộ lọc khác */
+(function () {
+  var F = [
+    { id: 'selectSlice',  field: 'category', all: 'All materials' },
+    { id: 'selectYear',   field: 'year',     all: 'All' },
+    { id: 'selectWeek',   field: 'week',     all: 'All', mode: 'week' },
+    { id: 'selectDate',   field: 'date',     all: 'All', mode: 'date' },
+    { id: 'selectVendor', field: 'vendor',   all: 'All' }
+  ];
+  function val(f) { var el = document.getElementById(f.id); return el ? (el.value || f.all) : f.all; }
+  function active(f) { return !f.mode || (typeof timeMode === 'undefined' ? f.mode === 'week' : timeMode === f.mode); }
+  function matchExcept(r, skip) {
+    for (var i = 0; i < F.length; i++) {
+      var f = F[i];
+      if (f === skip || !active(f)) continue;
+      var v = val(f);
+      if (v !== f.all && String(r[f.field]) !== v) return false;
+    }
+    return true;
+  }
+  function updateLinkedSlicers() {
+    var rs = (typeof activeData !== 'undefined' && activeData && activeData.records) || [];
+    F.forEach(function (f) {
+      var el = document.getElementById(f.id);
+      if (!el) return;
+      var avail = {};
+      rs.forEach(function (r) { if (matchExcept(r, f)) avail[String(r[f.field])] = (avail[String(r[f.field])] || 0) + 1; });
+      Array.prototype.forEach.call(el.options, function (o) {
+        if (o.dataset.base == null) o.dataset.base = o.textContent;
+        var isAll = o.value === f.all, n = avail[o.value] || 0;
+        var ok = isAll || n > 0 || o.value === el.value;
+        o.disabled = !ok;
+        o.style.color = ok ? '' : '#b6bfcc';
+        o.textContent = isAll ? o.dataset.base : o.dataset.base + ' (' + n + ')';
+      });
+    });
+  }
+  window.updateLinkedSlicers = updateLinkedSlicers;
+  window.clearAllFilters = function () {
+    F.forEach(function (f) { var el = document.getElementById(f.id); if (el) el.value = f.all; });
+    applyFilters();
+  };
+  if (typeof renderAll === 'function') {
+    var _renderAll = renderAll;
+    renderAll = function () { updateLinkedSlicers(); return _renderAll.apply(this, arguments); };
+  }
+  document.addEventListener('DOMContentLoaded', function () { setTimeout(updateLinkedSlicers, 0); });
+})();
+
+</script>
+</body>
+</html>
